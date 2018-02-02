@@ -7,9 +7,10 @@ using namespace std;
 
 int main(void)
 {
-  int i;
-  Mat img = imread("image.jpg");
-  imshow("image",img);
+  Mat img = imread("heg.jpg");
+  Mat dst;
+  cvtColor(img, dst, COLOR_RGB2GRAY);
+  imshow("image",dst);
   waitKey(0);
   return 0;
 }
