@@ -26,16 +26,21 @@ int main(int argc, const char* argv[])
   // 画像データを格納するための変数を宣言する
   cv::Mat frame;
 
+  cv::Mat dst, gray, img1, img2;
+
   for (;;)
   {
     // （4）カメラから1フレーム分の画像データを取得して、変数frameに格納する
     cap >> frame;
-
+    cv::cvtColor(frame, gray, cv::COLOR_RGB2GRAY);
+    //cv::equalizeHist(gray, img1);
+    cv::GaussianBlur(gray, img2, cv::Size(7,7), 10, 10);
+    cv::Canny(img2, dst, 40, 150);
     // 画像データ取得に失敗したらループを抜ける
     if (frame.empty()) break;
 
     // 取得した画像データをウィンドウ表示する
-    cv::imshow("image", frame);
+    cv::imshow("image", dst);
 
     if (cv::waitKey(30) >= 0) break;
   }
