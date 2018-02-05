@@ -5,12 +5,14 @@
             "includePath": [
                 "/usr/include",
                 "/usr/local/include",
+                "/opt/ros/kinetic/include",
                 "${workspaceRoot}"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
+                    "/opt/ros/kinetic/include",
                     "/usr/include",
                     "/usr/local/include",
                     "${workspaceRoot}"
@@ -33,10 +35,9 @@
                 "/usr/local/include",
                 "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                 "/usr/include/x86_64-linux-gnu",
+                "/opt/ros/kinetic/include/opencv-3.3.1",
                 "/usr/include",
-                "${workspaceRoot}",
-                "/usr/include/opencv",
-                "/usr/include/opencv2"
+                "${workspaceRoot}"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -49,9 +50,9 @@
                     "/usr/local/include",
                     "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                     "/usr/include/x86_64-linux-gnu",
+                    "/opt/ros/kinetic/include/opencv-3.3.1",
                     "/usr/include",
-                    "${workspaceRoot}",
-                    "/usr/include/opencv"
+                    "${workspaceRoot}"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

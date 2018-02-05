@@ -12,7 +12,7 @@
                 //"/property:GenerateFullPaths=true",
                 //"/t:build"
                 "main.cpp",
-                "`pkg-config --cflags opencv`", "`pkg-config --libs opencv`"
+                "`pkg-config --cflags opencv-3.3.1`", "`pkg-config --libs opencv-3.3.1`"
             ],
             "group": "build",
             "presentation": {
