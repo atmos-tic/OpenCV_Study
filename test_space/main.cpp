@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
    cv::namedWindow("track", cv::WINDOW_AUTOSIZE);
    int thredshold_value = 80;
    cv::createTrackbar("threshold", "track", &thredshold_value, 255);
-   //cv::imshow("track", dst);
+  
   for (;;)
   {
     // （4）カメラから1フレーム分の画像データを取得して、変数frameに格納する
