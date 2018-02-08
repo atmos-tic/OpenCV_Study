@@ -21,7 +21,8 @@ int main(int argc, const char* argv[])
   cap.set(cv::CAP_PROP_FPS, 30.0);
 
   // 画像表示用のウィンドウを生成する
-  cv::namedWindow("image", cv::WINDOW_AUTOSIZE);
+  cv::namedWindow("in", cv::WINDOW_AUTOSIZE);
+  cv::namedWindow("out", cv::WINDOW_AUTOSIZE);
 
   // 画像データを格納するための変数を宣言する
   cv::Mat frame;
