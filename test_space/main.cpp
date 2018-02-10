@@ -27,60 +27,76 @@ int main(int argc, const char* argv[])
   // 画像データを格納するための変数を宣言する
   cv::Mat frame;
 
-  cv::Mat dst, pre_img[2], dif[3], gray, sub_img, img;
+  cv::Mat dst, img_diff[2], dif[3], gray, sub_img;
   int set_flag = 1;
   /*トラックバー用window作成*/
    cv::namedWindow("track", cv::WINDOW_AUTOSIZE);
    int thredshold_value = 80;
-   cv::createTrackbar("threshold", "track", &thredshold_value, 10);
+   cv::createTrackbar("threshold", "track", &thredshold_value, 255);
   
   for (;;)
   {
-   if(set_flag){
-      cap>>frame;
-      cv::cvtColor(frame,img,CV_RGB2GRAY);
-      //cv::cvtColor(frame, gray, cv::COLOR_RGB2GRAY);
-      //threshold(gray, dst, thredshold_value, 200, 0);
-      img.copyTo(pre_img[0],img);
-      img.copyTo(pre_img[1],img);
-      set_flag = 0;
-   } 
-  //   // （4）カメラから1フレーム分の画像データを取得して、変数frameに格納する
-  //  cap >> frame;
-  //  cv::cvtColor(frame, gray, cv::COLOR_RGB2GRAY);
-  //  cv::equalizeHist(gray, img1);
-  //  cv::threshold(gray, dst, thredshold_value, 200, 0);
-  //   // cv::GaussianBlur(gray, img2, cv::Size(7,7), 10, 10);
-  //   // cv::Canny(img2, dst, 40, 150);
+   cap >> frame;
+   cv::cvtColor(frame, gray, cv::COLOR_RGB2GRAY);
+  // cv::equalizeHist(gray, gray);
+  // cv::threshold(gray, dst, thredshold_value, 200, 0);
+    cv::GaussianBlur(gray, gray, cv::Size(7,7), 10, 10);
+    cv::Sobel(gray, img_diff[0], -1, 1, 0);
+    cv::Sobel(gray, img_diff[1], -1, 0, 1);
+    //dst = img_diff[0].mul(img_diff[0]) + img_diff[1].mul(img_diff[1]);
+    cv::sqrt(img_diff[0].mul(img_diff[0]) + img_diff[1].mul(img_diff[1]), dst);
 
-    //差分1：フレーム1と2の差を求める
-    cv::absdiff(pre_img[0], pre_img[1],dif[0]);
-    //差分2：フレーム2と3の差を求める
-    cv::absdiff(pre_img[0], img,dif[1]);
-    //差分1と差分2の結果を比較(論理積)し、diffに出力
-    cv::bitwise_and(dif[0],dif[1],dif[2]);
+    // cv::Canny(img2, dst, 40, 150);
+
+    // //差分1：フレーimg_diff[0].mul(img_diff[0]) + img_diff[1].mul(img_diff[1])ム1と2の差を求める
+    // cv::absdiff(pre_img[0], pre_img[1],dif[0]);
+    // //差分2：フレーム2と3の差を求める
+    // cv::absdiff(pre_img[0], img,dif[1]);
+    // //差分1と差分2の結果を比較(論理積)し、diffに出力
+    // cv::bitwise_and(dif[0],dif[1],dif[2]);
  
-    //差分diffのうち、閾値thを超えている部分を1、それ以外を0としてmaskに出力
-    cv::threshold(dif[2],gray,thredshold_value,1,cv::THRESH_BINARY);
-    //マスクmaskのうち、1(True)の部分を白(0)に、0(False)の部分を黒(255)にしてim_maskに出力
-    cv::threshold(gray,dst,0,255,cv::THRESH_BINARY);
-    //メディアンフィルタを使った平滑化によってゴマ塩ノイズを除去、アパーチャサイズ5
-    cv::medianBlur(dst,dst,5);
-    //ウィンドウ2枚にそれぞれ入力画像、差分画像を表示
-    cv::imshow("in",frame);
-    cv::imshow("out",dst);
+    // //差分diffのうち、閾値thを超えている部分を1、それ以外を0としてmaskに出力
+    // cv::threshold(dif[2],gray,thredshold_value,1,cv::THRESH_BINARY);
+    // //マスクmaskのうち、1(True)の部分を白(0)に、0(False)の部分を黒(255)にしてim_maskに出力
+    // cv::threshold(gray,dst,0,255,cv::THRESH_BINARY);
+    // ////差分1：フレーム1と2の差を求める
+    // cv::absdiff(pre_img[0], pre_img[1],dif[0]);
+    // //差分2：フレーム2と3の差を求める
+    // cv::absdiff(pre_img[0], img,dif[1]);
+    // //差分1と差分2の結果を比較(論理積)し、diffに出力
+    // cv::bitwise_and(dif[0],dif[1],dif[2]);
  
-    //新しいフレームをカメラから一つ取り出し、3つのフレームを全てずらす
-    pre_img[1].copyTo(pre_img[0],pre_img[1]);
-    img.copyTo(pre_img[1],img);
-    cap>>frame;
-    cv::cvtColor(frame,img,CV_RGB2GRAY);
+    // //差分diffのうち、閾値thを超えている部分を1、それ以外を0としてmaskに出力
+    // cv::threshold(dif[2],gray,thredshold_value,1,cv::THRESH_BINARY);
+    // //マスクmaskのうち、1(True)の部分を白(0)に、0(False)の部分を黒(255)にしてim_maskに出力
+    // cv::threshold(gray,dst,0,255,cv::THRESH_BINARY);
+    // //メディアンフィルタを使った平滑化によってゴマ塩ノイズを除去、アパーチャサイズ5
+    // cv::medianBlur(dst,dst,5);
+    // //ウィンドウ2枚にそれぞれ入力画像、差分画像を表示
+    // cv::imshow("in",frame);
+    // cv::imshow("out",dst);
+ 
+    // //新しいフレームをカメラから一つ取り出し、3つのフレームを全てずらす
+    // pre_img[1].copyTo(pre_img[0],pre_img[1]);
+    // img.copyTo(pre_img[1],img);
+    // cap>>frame;
+    // cv::cvtColor(frame,img,CV_RGB2GRAY);メディアンフィルタを使った平滑化によってゴマ塩ノイズを除去、アパーチャサイズ5
+    // cv::medianBlur(dst,dst,5);
+    // //ウィンドウ2枚にそれぞれ入力画像、差分画像を表示
+     cv::imshow("in",frame);
+     cv::imshow("out",dst);
+ 
+    // //新しいフレームをカメラから一つ取り出し、3つのフレームgを全てずらす
+    // pre_img[1].copyTo(pre_img[0],pre_img[1]);
+    // img.copyTo(pre_img[1],img);
+    // cap>>frame;
+    // cv::cvtColor(frame,img,CV_RGB2GRAY);
 
     // 画像データ取得に失敗したらループを抜ける
-    if (frame.empty()) break;
+  //if (frame.empty()) break;
 
     // 取得した画像データをウィンドウ表示する
-    //cv::imshow("image", dst);
+   //cv::imshow("image", dst);
 
     //ウィンドウ上でEscキーが押されたらプログラム終了
     if(cv::waitKey(27)>=0)

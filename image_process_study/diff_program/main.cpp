@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
   /*トラックバー用window作成*/
    cv::namedWindow("track", cv::WINDOW_AUTOSIZE);
    int thredshold_value = 80;
-   cv::createTrackbar("threshold", "track", &thredshold_value, 255);
+   cv::createTrackbar("threshold", "track", &thredshold_value, 10);
   
   for (;;)
   {
@@ -61,7 +61,7 @@ int main(int argc, const char* argv[])
     cv::bitwise_and(dif[0],dif[1],dif[2]);
  
     //差分diffのうち、閾値thを超えている部分を1、それ以外を0としてmaskに出力
-    cv::threshold(dif[2],gray,5,1,cv::THRESH_BINARY);
+    cv::threshold(dif[2],gray,thredshold_value,1,cv::THRESH_BINARY);
     //マスクmaskのうち、1(True)の部分を白(0)に、0(False)の部分を黒(255)にしてim_maskに出力
     cv::threshold(gray,dst,0,255,cv::THRESH_BINARY);
     //メディアンフィルタを使った平滑化によってゴマ塩ノイズを除去、アパーチャサイズ5
