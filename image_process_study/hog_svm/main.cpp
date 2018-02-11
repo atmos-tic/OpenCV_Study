@@ -2,11 +2,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp> // videoioのヘッダーをインクルード
 #include <opencv2/highgui.hpp> // highguiのヘッダーをインクルード
-//clude <Eigen/Dense>
-//#include <Eigen/Sparse>
-//#include <opencv2/core/eigen.hpp>
 #include <iostream>
-/*https://www.buildinsider.net/small/opencv/006*/
 
 int main(int argc, const char* argv[])
 {
