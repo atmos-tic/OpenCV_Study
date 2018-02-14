@@ -63,47 +63,47 @@ int main(int argc, const char* argv[])
   cv::add(angle, cv::Scalar(-1), angle, angle == Nangle);//五入防止
   cv::imshow("angle", angle);
 
-  //ヒストグラムの作成とその和
-  cv::Mat bin[Nangle], integral[Nangle];
-  for(int theta = 0; theta < Nangle; theta++){
-    cv::Mat tmp;
-    cv::bitwise_and(angle, theta, tmp, angle==theta);;
-    cv::add(tmp, 1-theta, tmp, tmp==theta);
-    bin[theta] = tmp.mul(mag);
-    cv::integral(bin[theta],integral[theta]);
-  //  std::cout<<"bin"<<bin[theta]<<std::endl;
-  }
-
-  // for(int x_block_start = 0; x_block_start < Data_Size/(Ncell*Npixel); x_block_start++){
-  //   for(int y_block_start = 0; y_block_start < Data_Size/(Ncell*Npixel); y_block_start++){
-  //     /*ブロック毎の処理*/
-  //     cv::Scalar hist_sum;
-  //     cv::Scalar hog_hist[Nangle];
-  //     for(int x_cell_start = x_block_start; x_cell_start < x_block_start+Ncell; x_cell_start++){
-  //       for(int y_cell_start = y_block_start; y_cell_start < y_block_start+Ncell; y_cell_start++){ 
-  //         /*セル毎の処理*/
-  //         //ROIでセルの切り出し
-  //         cv::Mat mag_roi(mag, cv::Rect(x_cell_start*Npixel, y_cell_start*Npixel, Npixel, Npixel));
-  //         cv::Mat angle_roi(angle, cv::Rect(x_cell_start*Npixel, y_cell_start*Npixel, Npixel, Npixel));
-  //         //ヒストグラムの作成とその和
-  //         for(int theta = 0; theta < Nangle; theta++){
-  //           cv::Mat tmp;
-  //           cv::bitwise_and(angle_roi, theta, tmp, angle_roi==theta);;
-  //           cv::add(tmp, 1-theta, tmp, tmp==theta);
-  //           hog_hist[theta] = cv::sum(tmp.mul(mag_roi));
-  //           hist_sum += hog_hist[theta]*hog_hist[theta];
-  //           std::cout<<"hist"<<hog_hist<<std::endl;
-  //         }
-  //       }
-  //     }
-  //     std::cout<<"x"<<x_block_start<<std::endl;
-  //     std::cout<<"y"<<y_block_start<<std::endl;
-  //     cv::Mat mag_block_roi(mag, cv::Rect(x_block_start*Ncell, y_block_start*Ncell, Ncell*Npixel, Ncell*Npixel));
-  //     mag_block_roi / std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1) ;
-  //     std::cout<<mag_block_roi<<std::endl;
-  //     cv::imshow("mag_block_roi", mag_block_roi);
-  //   }
+  // //ヒストグラムの作成とその和
+  // cv::Mat bin[Nangle], integral[Nangle];
+  // for(int theta = 0; theta < Nangle; theta++){
+  //   cv::Mat tmp;
+  //   cv::bitwise_and(angle, theta, tmp, angle==theta);;
+  //   cv::add(tmp, 1-theta, tmp, tmp==theta);
+  //   bin[theta] = tmp.mul(mag);
+  //   cv::integral(bin[theta],integral[theta]);
+  // //  std::cout<<"bin"<<bin[theta]<<std::endl;
   // }
+
+  for(int x_block_start = 0; x_block_start < Data_Size/(Ncell*Npixel); x_block_start++){
+    for(int y_block_start = 0; y_block_start < Data_Size/(Ncell*Npixel); y_block_start++){
+      /*ブロック毎の処理*/
+      cv::Scalar hist_sum;
+      cv::Scalar hog_hist[Nangle];
+      for(int x_cell_start = x_block_start; x_cell_start < x_block_start+Ncell; x_cell_start++){
+        for(int y_cell_start = y_block_start; y_cell_start < y_block_start+Ncell; y_cell_start++){ 
+          /*セル毎の処理*/
+          //ROIでセルの切り出し
+          cv::Mat mag_roi(mag, cv::Rect(x_cell_start*Npixel, y_cell_start*Npixel, Npixel, Npixel));
+          cv::Mat angle_roi(angle, cv::Rect(x_cell_start*Npixel, y_cell_start*Npixel, Npixel, Npixel));
+          //ヒストグラムの作成とその和
+          for(int theta = 0; theta < Nangle; theta++){
+            cv::Mat tmp;
+            cv::bitwise_and(angle_roi, theta, tmp, angle_roi==theta);;
+            cv::add(tmp, 1-theta, tmp, tmp==theta);
+            hog_hist[theta] = cv::sum(tmp.mul(mag_roi));
+            hist_sum += hog_hist[theta]*hog_hist[theta];
+            std::cout<<"hist"<<hog_hist<<std::endl;
+          }
+        }
+      }
+      std::cout<<"x"<<x_block_start<<std::endl;
+      std::cout<<"y"<<y_block_start<<std::endl;
+      cv::Mat mag_block_roi(mag, cv::Rect(x_block_start*Ncell, y_block_start*Ncell, Ncell*Npixel, Ncell*Npixel));
+      mag_block_roi / std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1) ;
+      std::cout<<mag_block_roi<<std::endl;
+      cv::imshow("mag_block_roi", mag_block_roi);
+    }
+  }
  
   cv::waitKey(0);
 
