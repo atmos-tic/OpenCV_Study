@@ -77,16 +77,7 @@ int main(int argc, const char* argv[])
     integral.push_back(tmp2);
   }
   cv::Mat Mat_bin(DSx/Np, DSy/Np, CV_8UC(9)); 
-  cv::Mat Mat_integral(DSx/Np, DSy/Np, CV_8UC(9));
   cv::merge(bin, Mat_bin);
-  cv::merge(integral, Mat_integral);
-
-  // cv::Mat hist;
-  // int channels[] = {0};
-  // float range[] = {0, 180};
-  // const float* ranges[] = {range};
-  // int histSize[] = {Nbin};
-  // cv::calcHist(&ang,1,channels,cv::Mat(),hist,1,histSize,ranges,true,false);
 
   cv::Mat hog_hist[DSx/Np-Nc+1][DSy/Np-Nc+1];
 
@@ -106,48 +97,17 @@ int main(int argc, const char* argv[])
       std::vector<cv::Mat> tmp;
       cv::Mat sum = cv::Mat::zeros(Nc,Nc,CV_8UC1);
       cv::split(hog_hist[Sbx][Sby], tmp);
-      std::cout<<"A"<<std::endl;
       for(int theta = 0; theta < Nbin; theta++){
         sum += tmp[theta];
       }
-      std::cout<<"B"<<std::endl;
       sum = cv::sqrt(norm(sum)*norm(sum) + 1);
-      std::cout<<"C"<<std::endl;
-      hog_hist[Sbx][Sby] /= sum;
-      std::cout<<"D"<<std::endl;
+      for(int theta = 0; theta < Nbin; theta++){
+        tmp[theta] /= sum;
+      }
+      cv::merge(tmp, hog_hist[Sbx][Sby]);
     }
   }
-  // cv::Mat hog_descriptor;//(Data_Size-(Nc*Np)+1, Data_Size-(Nc*Np)+1);
-  // cv::Mat cell_hist[Nbin];
-  // for(int x_block_start = 0; x_block_start < Data_Size-(Nc*Np)+1; x_block_start++){
-  //   for(int y_block_start = 0; y_block_start < Data_Size-(Nc*Np)+1; y_block_start++){
-  //     /*ブロック毎の処理*/
-  //     cv::Scalar hist_sum = 0;
-  //     cv::Scalar hog_hist[Nbin];
-  //     for(int x_cell_start = x_block_start; x_cell_start < x_block_start+Nc; x_cell_start++){
-  //       for(int y_cell_start = y_block_start; y_cell_start < y_block_start+Nc; y_cell_start++){ 
-  //         /*セル毎の処理*/
-  //         //ROIでセルの切り出し
-  //         cv::Mat mag_roi(mag, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Np, y_block_start+(y_cell_start-y_block_start)*Np, Np, Np));
-  //         cv::Mat angle_roi(angle, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Np, y_block_start+(y_cell_start-y_block_start)*Np, Np, Np));
-  //         //ヒストグラムの作成とその和
-  //         for(int theta = 0; theta < Nbin; theta++){
-  //           cv::Mat tmp;
-  //           cv::bitwise_and(angle_roi, theta, tmp, angle_roi==theta);
-  //           cv::add(tmp, 1-theta, tmp, tmp==theta);
-  //           hog_hist[theta] = cv::sum(tmp.mul(mag_roi));
-  //           hist_sum += hog_hist[theta];
-  //         }
-  //       }
-  //     }
-  //     cv::Mat mag_block_roi(mag, cv::Rect(x_block_start, y_block_start, Nc*Np, Nc*Np));
-  //     hog_descriptor = mag_block_roi / std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1);
-  //     std::cout<<std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1) <<std::endl;
-  //     cv::imshow("hog_descriptor", hog_descriptor);
-  //   }
-  // }
-
-  // cv::imshow("mag", mag);
+  
   cv::waitKey(0);
 
   return 0;
