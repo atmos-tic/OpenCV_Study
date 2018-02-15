@@ -4,7 +4,7 @@
 #include <opencv2/highgui.hpp> // highguiのヘッダーをインクルード
 #include <iostream>
 
-#define Nbin (9)
+#define Nbin (3)
 #define Np (4)
 #define Nc  (4)
 #define DSx (64)
@@ -92,19 +92,31 @@ int main(int argc, const char* argv[])
 
   for(int Sbx = 0; Sbx < DSx/Np-Nc+1; Sbx++){
     for(int Sby = 0; Sby < DSy/Np-Nc+1; Sby++){
+      //各ブロック内の処理
       hog_hist[Sbx][Sby] = cv::Mat(Nc, Nc, CV_8UC(9));//ヒストグラム初期化
-      for(int Scx = Sbx; Scx < Sbx+Nc; Scx++){
-        for(int Scy = Sby; Scy < Sby+Nc; Scy++){ 
-          cv::Mat hist_roi(Mat_bin, cv::Rect(Sbx+(Scx-Sbx)*Np, Sby+(Scy-Sby)*Np, Np, Np));
-          std::cout<<"AAA"<<std::endl;
-          hog_hist[Sbx][Sby].at<cv::Mat>(Scy, Scx) = cv::sum(hist_roi);//各セルのヒストグラム作成
-          std::cout<<"BBB"<<std::endl;
+      for(int Scx = 0; Scx < Nc; Scx++){
+        for(int Scy = 0; Scy < Nc; Scy++){ 
+          //各セル内の処理
+          cv::Mat hist_roi(Mat_bin, cv::Rect(Sbx*Np+Scx*Np, Sby*Np+Scy*Np, Np, Np));//全体からセルのデータ抽出
+          cv::Mat tmp;
+          cv::integral(hist_roi,tmp);
+          hog_hist[Sbx][Sby].at<unsigned char>(Scy, Scx) = tmp.at<unsigned char>(Np-1, Np-1);//各セルのヒストグラム作成
         }
       }
-
+      std::vector<cv::Mat> tmp;
+      cv::Mat sum = cv::Mat::zeros(Nc,Nc,CV_8UC1);
+      cv::split(hog_hist[Sbx][Sby], tmp);
+      std::cout<<"A"<<std::endl;
+      for(int theta = 0; theta < Nbin; theta++){
+        sum += tmp[theta];
+      }
+      std::cout<<"B"<<std::endl;
+      sum = cv::sqrt(norm(sum)*norm(sum) + 1);
+      std::cout<<"C"<<std::endl;
+      hog_hist[Sbx][Sby] /= sum;
+      std::cout<<"D"<<std::endl;
     }
   }
-
   // cv::Mat hog_descriptor;//(Data_Size-(Nc*Np)+1, Data_Size-(Nc*Np)+1);
   // cv::Mat cell_hist[Nbin];
   // for(int x_block_start = 0; x_block_start < Data_Size-(Nc*Np)+1; x_block_start++){
