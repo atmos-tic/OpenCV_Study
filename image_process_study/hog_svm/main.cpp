@@ -96,10 +96,12 @@ int main(int argc, const char* argv[])
       for(int Scx = Sbx; Scx < Sbx+Nc; Scx++){
         for(int Scy = Sby; Scy < Sby+Nc; Scy++){ 
           cv::Mat hist_roi(Mat_bin, cv::Rect(Sbx+(Scx-Sbx)*Np, Sby+(Scy-Sby)*Np, Np, Np));
+          std::cout<<"AAA"<<std::endl;
           hog_hist[Sbx][Sby].at<cv::Mat>(Scy, Scx) = cv::sum(hist_roi);//各セルのヒストグラム作成
-
+          std::cout<<"BBB"<<std::endl;
         }
       }
+
     }
   }
 
