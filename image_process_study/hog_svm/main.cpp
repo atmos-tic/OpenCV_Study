@@ -73,35 +73,36 @@ int main(int argc, const char* argv[])
   //   cv::integral(bin[theta],integral[theta]);
   // //  std::cout<<"bin"<<bin[theta]<<std::endl;
   // }
-  cv::Mat hog_descriptor;//(Data_Size-(Ncell*Npixel)+1, Data_Size-(Ncell*Npixel)+1);
-  cv::Mat cell_hist[Nbin];
-  for(int x_block_start = 0; x_block_start < Data_Size-(Ncell*Npixel)+1; x_block_start++){
-    for(int y_block_start = 0; y_block_start < Data_Size-(Ncell*Npixel)+1; y_block_start++){
-      /*ブロック毎の処理*/
-      cv::Scalar hist_sum = 0;
-      cv::Scalar hog_hist[Nbin];
-      for(int x_cell_start = x_block_start; x_cell_start < x_block_start+Ncell; x_cell_start++){
-        for(int y_cell_start = y_block_start; y_cell_start < y_block_start+Ncell; y_cell_start++){ 
-          /*セル毎の処理*/
-          //ROIでセルの切り出し
-          cv::Mat mag_roi(mag, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Npixel, y_block_start+(y_cell_start-y_block_start)*Npixel, Npixel, Npixel));
-          cv::Mat angle_roi(angle, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Npixel, y_block_start+(y_cell_start-y_block_start)*Npixel, Npixel, Npixel));
-          //ヒストグラムの作成とその和
-          for(int theta = 0; theta < Nbin; theta++){
-            cv::Mat tmp;
-            cv::bitwise_and(angle_roi, theta, tmp, angle_roi==theta);;
-            cv::add(tmp, 1-theta, tmp, tmp==theta);
-            hog_hist[theta] = cv::sum(tmp.mul(mag_roi));
-            hist_sum += hog_hist[theta];
-          }
-        }
-      }
-      cv::Mat mag_block_roi(mag, cv::Rect(x_block_start, y_block_start, Ncell*Npixel, Ncell*Npixel));
-      hog_descriptor = mag_block_roi / std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1);
-      std::cout<<std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1) <<std::endl;
-      cv::imshow("hog_descriptor", hog_descriptor);
-    }
-  }
+
+  // cv::Mat hog_descriptor;//(Data_Size-(Ncell*Npixel)+1, Data_Size-(Ncell*Npixel)+1);
+  // cv::Mat cell_hist[Nbin];
+  // for(int x_block_start = 0; x_block_start < Data_Size-(Ncell*Npixel)+1; x_block_start++){
+  //   for(int y_block_start = 0; y_block_start < Data_Size-(Ncell*Npixel)+1; y_block_start++){
+  //     /*ブロック毎の処理*/
+  //     cv::Scalar hist_sum = 0;
+  //     cv::Scalar hog_hist[Nbin];
+  //     for(int x_cell_start = x_block_start; x_cell_start < x_block_start+Ncell; x_cell_start++){
+  //       for(int y_cell_start = y_block_start; y_cell_start < y_block_start+Ncell; y_cell_start++){ 
+  //         /*セル毎の処理*/
+  //         //ROIでセルの切り出し
+  //         cv::Mat mag_roi(mag, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Npixel, y_block_start+(y_cell_start-y_block_start)*Npixel, Npixel, Npixel));
+  //         cv::Mat angle_roi(angle, cv::Rect(x_block_start+(x_cell_start-x_block_start)*Npixel, y_block_start+(y_cell_start-y_block_start)*Npixel, Npixel, Npixel));
+  //         //ヒストグラムの作成とその和
+  //         for(int theta = 0; theta < Nbin; theta++){
+  //           cv::Mat tmp;
+  //           cv::bitwise_and(angle_roi, theta, tmp, angle_roi==theta);;
+  //           cv::add(tmp, 1-theta, tmp, tmp==theta);
+  //           hog_hist[theta] = cv::sum(tmp.mul(mag_roi));
+  //           hist_sum += hog_hist[theta];
+  //         }
+  //       }
+  //     }
+  //     cv::Mat mag_block_roi(mag, cv::Rect(x_block_start, y_block_start, Ncell*Npixel, Ncell*Npixel));
+  //     hog_descriptor = mag_block_roi / std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1);
+  //     std::cout<<std::sqrt(cv::norm(hist_sum)*cv::norm(hist_sum) + 1) <<std::endl;
+  //     cv::imshow("hog_descriptor", hog_descriptor);
+  //   }
+  // }
   cv::imshow("mag", mag);
   cv::waitKey(0);
 
