@@ -78,7 +78,7 @@ int main(int argc, const char* argv[])
     tmp1 = tmp1.mul(mag);
     bin.push_back(tmp1);
   }
-  cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_8UC(Nbin)); 
+  cv::Mat Mat_bin;//(DSy/Np, DSx/Np, CV_8UC(Nbin)); 
   cv::merge(bin, Mat_bin);
 
   cv::Mat hog_hist[DSx/Np-Nc+1][DSy/Np-Nc+1];
@@ -90,10 +90,10 @@ int main(int argc, const char* argv[])
         for(int Scy = 0; Scy < Nc; Scy++){ 
           //各セル内の処理
           //ここが悪い
-          cv::Mat hist_roi(Mat_bin, cv::Rect(Sby*Np+Scy*Np, Sbx*Np+Scx*Np, Np, Np));//全体からセルのデータ抽出
+          cv::Mat hist_roi = Mat_bin(cv::Rect(Sby*Np+Scy*Np, Sbx*Np+Scx*Np, Np, Np));//全体からセルのデータ抽出
           cv::Mat tmp;
           cv::integral(hist_roi,tmp);
-          std::cout<<tmp<<std::endl;
+          //std::cout<<hist_roi<<std::endl;
           hog_hist[Sbx][Sby].at<unsigned char>(Scy, Scx) = tmp.at<unsigned char>(Np, Np);//各セルのヒストグラム作成
         }
       }
