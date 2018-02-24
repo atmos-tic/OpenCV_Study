@@ -5,10 +5,10 @@
 #include <iostream>
 
 #define Nbin (9)
-#define Np (4)
-#define Nc  (4)
-#define DSx (128)
-#define DSy (128)
+#define Np (16)
+#define Nc  (2)
+#define DSx (256)
+#define DSy (256)
 cv::Rect selection;
 int select_object;
 void on_mouse (int event, int x, int y, int flags, void *param);
@@ -18,12 +18,12 @@ int main(int argc, const char* argv[])
   cv::Mat frame;
   cv::Mat imgdst, img_diff[2], dif[3], img, clone, dst;
 
-  frame = cv::imread("seacow2.jpg");
+  img = cv::imread("seacow2.jpg");
   //frame = cv::imread("img.jpg");
   
-  if(!frame.data)
+  if(!img.data)
     return -1;
-  cv::cvtColor(frame, img, cv::COLOR_RGB2GRAY);
+  cv::cvtColor(img, img, cv::COLOR_RGB2GRAY);
   cv::namedWindow("in", cv::WINDOW_AUTOSIZE);
   cv::imshow("in", img); 
   cvSetMouseCallback("in", (CvMouseCallback)(&on_mouse), &img);
@@ -55,17 +55,16 @@ int main(int argc, const char* argv[])
   cv::Sobel(dst, img_diff[1], CV_32F, 0, 1);
   cv::Mat mag, ang; 
   cv::cartToPolar(img_diff[0], img_diff[1], mag, ang, true); 
-  mag.convertTo(mag, CV_8U, 1);
-  cv::imshow("mag", mag);
+  //mag.convertTo(mag, CV_8U, 1);
+  //cv::imshow("mag", mag);
   // 勾配方向を[0, 180)にする
   cv::add(ang, cv::Scalar(180.0), ang, ang < 0.0);
   cv::add(ang, cv::Scalar(-180), ang, ang >= 180);
   cv::add(ang, cv::Scalar(-180), ang, ang == 180);
-  ang.convertTo(ang, CV_8U, 1);
+  //ang.convertTo(ang, CV_8U, 1);
   ang /= (180/Nbin);
   cv::add(ang, cv::Scalar(-1), ang, ang == 9);
-  cv::imshow("ang", ang);
-
+  //cv::imshow("ang", ang);
 
   //積分画像作成
   std::vector<cv::Mat> bin;
@@ -76,24 +75,24 @@ int main(int argc, const char* argv[])
     tmp = tmp.mul(mag);
     bin.push_back(tmp);
   }
-  cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_8UC(Nbin)); 
+  cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_32FC(Nbin)); 
   cv::merge(bin, Mat_bin);
 
-  typedef cv::Matx<double, 9, 1> Matx9d;
+  typedef cv::Matx<float, 1, Nbin> Matx9d;
 
   cv::Mat hog_hist[DSx/Np-Nc+1][DSy/Np-Nc+1];
   for(int Sbx = 0; Sbx < DSx/Np-Nc+1; Sbx++){
     for(int Sby = 0; Sby < DSy/Np-Nc+1; Sby++){
       //各ブロック内の処理
-      hog_hist[Sbx][Sby] = cv::Mat::zeros(Nc, Nc, CV_8UC(Nbin));//ヒストグラム初期化
+      hog_hist[Sbx][Sby] = cv::Mat(Nc, Nc, CV_32FC(Nbin));//ヒストグラム初期化
       for(int Scx = 0; Scx < Nc; Scx++){
         for(int Scy = 0; Scy < Nc; Scy++){ 
           //各セル内の処理
           cv::Mat hist_roi = Mat_bin(cv::Rect(Sby*Np+Scy*Np, Sbx*Np+Scx*Np, Np, Np));//全体からセルのデータ抽出
           cv::Mat tmp;
           cv::integral(hist_roi,tmp);
-          //std::cout<<tmp.at<Matx9d>(Np, Np)<<std::endl;
-          hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = tmp.at<Matx9d>(Np, Np);//各セルのヒストグラム作成
+          //std::cout<<hist_roi.at<Matx9d>(Np-1, Np-1)<<std::endl;
+          hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = hist_roi.at<Matx9d>(Np-1, Np-1);//各セルのヒストグラム作成
         }
       }
       
@@ -102,8 +101,9 @@ int main(int argc, const char* argv[])
       std::cout<<norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
       // //std::cout<<hog_hist[Sbx][Sby]<<std::endl;
       hog_hist[Sbx][Sby] /= sum;
-      cv::Mat tmp(Nc, Nc, CV_8UC(9));
+      cv::Mat tmp(Nc, Nc, CV_32FC(9));
       cv::integral(hog_hist[Sbx][Sby],tmp);
+      //std::cout<<tmp<<std::endl;
 
       //角度ごとに線を描画
       cv::Point center(Sbx*Np+(Nc*Np)/2,Sby*Np+(Nc*Np)/2);
@@ -112,7 +112,8 @@ int main(int argc, const char* argv[])
         cv::Point rd(Np*0.5*cos(theta), Np*0.5*sin(theta));
         cv::Point rp = center -   rd;
         cv::Point lp = center -  -rd;
-        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<cv::Scalar>(Nc, Nc)[i], 255, 255)); 
+        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<double>(Nc-1, Nc-1+i), 255, 255)); 
+        std::cout<<tmp.at<double>(Nc-1, Nc-1+i)<<std::endl;
       }     
     }
   }
