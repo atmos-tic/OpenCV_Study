@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
           cv::Mat tmp;
           cv::integral(hist_roi,tmp);
           //std::cout<<hist_roi.at<Matx9d>(Np-1, Np-1)<<std::endl;
-          hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = hist_roi.at<Matx9d>(Np-1, Np-1);//各セルのヒストグラム作成
+          hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = tmp.at<Matx9d>(Np, Np);//各セルのヒストグラム作成
         }
       }
       
@@ -108,12 +108,13 @@ int main(int argc, const char* argv[])
       //角度ごとに線を描画
       cv::Point center(Sbx*Np+(Nc*Np)/2,Sby*Np+(Nc*Np)/2);
       for (int i = 0; i < Nbin; i++) {
-        double theta = (i * 180 / Nbin + 90.0 ) * CV_PI / 180.0;
+        double theta = (i * 180 / Nbin) * CV_PI / 180.0;
         cv::Point rd(Np*0.5*cos(theta), Np*0.5*sin(theta));
-        cv::Point rp = center -   rd;
-        cv::Point lp = center -  -rd;
-        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<double>(Nc-1, Nc-1+i), 255, 255)); 
-        std::cout<<tmp.at<double>(Nc-1, Nc-1+i)<<std::endl;
+        cv::Point rp = center - rd;
+        cv::Point lp = center + rd;
+        cv::line(roi, rp, lp, cv::Scalar(255*hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i), 255, 255)); 
+        std::cout<<hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i)<<" "<<theta*180/CV_PI<<std::endl;
+        //std::cout<<tmp<<" "<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
       }     
     }
   }
