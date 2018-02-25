@@ -5,7 +5,7 @@
 #include <iostream>
 
 #define Nbin (9)
-#define Np (16)
+#define Np (4)
 #define Nc  (2)
 #define DSx (256)
 #define DSy (256)
@@ -60,10 +60,11 @@ int main(int argc, const char* argv[])
   // 勾配方向を[0, 180)にする
   cv::add(ang, cv::Scalar(180.0), ang, ang < 0.0);
   cv::add(ang, cv::Scalar(-180), ang, ang >= 180);
-  cv::add(ang, cv::Scalar(-180), ang, ang == 180);
-  //ang.convertTo(ang, CV_8U, 1);
+  ang.convertTo(ang, CV_8U, 1);
   ang /= (180/Nbin);
+  ang.convertTo(ang, CV_8U, 1);
   cv::add(ang, cv::Scalar(-1), ang, ang == 9);
+  ang.convertTo(ang, CV_32FC1, 1);
   //cv::imshow("ang", ang);
 
   //積分画像作成
@@ -72,7 +73,7 @@ int main(int argc, const char* argv[])
     cv::Mat tmp;
     cv::bitwise_and(ang, theta, tmp, ang==theta);
     cv::add(tmp, 1-theta, tmp, tmp==theta);
-    tmp = tmp.mul(mag);
+   // tmp = tmp.mul(mag);
     bin.push_back(tmp);
   }
   cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_32FC(Nbin)); 
@@ -90,15 +91,18 @@ int main(int argc, const char* argv[])
           //各セル内の処理
           cv::Mat hist_roi = Mat_bin(cv::Rect(Sby*Np+Scy*Np, Sbx*Np+Scx*Np, Np, Np));//全体からセルのデータ抽出
           cv::Mat tmp;
-          cv::integral(hist_roi,tmp);
-          //std::cout<<hist_roi.at<Matx9d>(Np-1, Np-1)<<std::endl;
+          cv::integral(hist_roi,tmp);         
+          //std::cout<<hist_roi.rows<<"|"<<hist_roi.cols<<"|"<<hist_roi.dims<<std::endl;
+          std::cout<<tmp<<std::endl;
+          std::cout<<tmp.at<double>(4, Nbin)<<std::endl;
           hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = tmp.at<Matx9d>(Np, Np);//各セルのヒストグラム作成
+          //std::cout<<hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx)<<std::endl;
         }
       }
       
       double sum;
       sum = cv::sqrt(norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby]) + 1);
-      std::cout<<norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
+      std::cout<<sum<<"|"<<norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
       // //std::cout<<hog_hist[Sbx][Sby]<<std::endl;
       hog_hist[Sbx][Sby] /= sum;
       cv::Mat tmp(Nc, Nc, CV_32FC(9));
@@ -110,10 +114,10 @@ int main(int argc, const char* argv[])
       for (int i = 0; i < Nbin; i++) {
         double theta = (i * 180 / Nbin) * CV_PI / 180.0;
         cv::Point rd(Np*0.5*cos(theta), Np*0.5*sin(theta));
-        cv::Point rp = center - rd;
-        cv::Point lp = center + rd;
-        cv::line(roi, rp, lp, cv::Scalar(255*hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i), 255, 255)); 
-        std::cout<<hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i)<<" "<<theta*180/CV_PI<<std::endl;
+        cv::Point rp = center + rd;
+        cv::Point lp = center - rd;
+        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<float>(Nc, Nc*Nbin+i), 255, 255)); 
+        //std::cout<<hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i)<<" "<<theta*180/CV_PI<<std::endl;
         //std::cout<<tmp<<" "<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
       }     
     }
