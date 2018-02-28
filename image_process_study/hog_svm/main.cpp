@@ -5,7 +5,7 @@
 #include <iostream>
 
 #define Nbin (9)
-#define Np (16)
+#define Np (8)
 #define Nc  (2)
 #define DSx (256)
 #define DSy (256)
@@ -65,15 +65,16 @@ int main(int argc, const char* argv[])
   ang.convertTo(ang, CV_8U, 1);
   cv::add(ang, cv::Scalar(-1), ang, ang == 9);
   ang.convertTo(ang, CV_64FC1, 1);
-  //cv::imshow("ang", ang);
+  //cv::imshow("ang", ang);     
 
   //積分画像作成
   std::vector<cv::Mat> bin;
+  cv::add(ang, 1, ang);
   for(int theta = 0; theta < Nbin; theta++){
     cv::Mat tmp;
-    cv::bitwise_and(ang, theta, tmp, ang==theta);
-    cv::add(tmp, 1-theta, tmp, tmp==theta);
-   // tmp = tmp.mul(mag);
+    cv::bitwise_and(ang, theta+1, tmp, ang==theta+1);
+    cv::add(tmp, -theta, tmp, tmp==theta+1);
+    tmp = tmp.mul(mag);
     bin.push_back(tmp);
   }
   cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_64FC(Nbin)); 
@@ -103,24 +104,25 @@ int main(int argc, const char* argv[])
       
       double sum;
       sum = cv::sqrt(norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby]) + 1);
-      std::cout<<sum<<"|"<<norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
       //std::cout<<hog_hist[Sbx][Sby]<<std::endl;
+      //std::cout<<sum<<"|"<<norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby])<<"|"<<norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
       hog_hist[Sbx][Sby] /= sum;
+     // std::cout<<hog_hist[Sbx][Sby]<<std::endl;
       cv::Mat tmp;
       cv::integral(hog_hist[Sbx][Sby],tmp);
-      //std::cout<<tmp<<std::endl;
+     // std::cout<<tmp<<std::endl;
 
       //角度ごとに線を描画
       cv::Point center(Sbx*Np+(Nc*Np)/2,Sby*Np+(Nc*Np)/2);
       for (int i = 0; i < Nbin; i++) {
-        double theta = (i * 180 / Nbin) * CV_PI / 180.0;
+        double theta = (i * 180 / Nbin + 90) * CV_PI / 180.0;
         cv::Point rd(Np*0.5*cos(theta), Np*0.5*sin(theta));
         cv::Point rp = center + rd;
         cv::Point lp = center - rd;
         //cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<Vec9d>(Nc, Nc*Nbin)[i], 255, 255)); 
         cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<double>(Nc, Nc*Nbin + i), 255, 255)); 
         //std::cout<<hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i)<<" "<<theta*180/CV_PI<<std::endl;
-        std::cout<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
+        //std::cout<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
       }     
     }
   }
