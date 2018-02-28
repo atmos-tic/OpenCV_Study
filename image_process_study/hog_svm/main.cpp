@@ -79,7 +79,7 @@ int main(int argc, const char* argv[])
   cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_32FC(Nbin)); 
   cv::merge(bin, Mat_bin);
 
-  typedef cv::Matx<float, 1, Nbin> Matx9d;
+  typedef cv::Vec<double, 9> Vec9f;
 
   cv::Mat hog_hist[DSx/Np-Nc+1][DSy/Np-Nc+1];
   for(int Sbx = 0; Sbx < DSx/Np-Nc+1; Sbx++){
@@ -94,9 +94,14 @@ int main(int argc, const char* argv[])
           cv::integral(hist_roi,tmp);         
           //std::cout<<hist_roi.rows<<"|"<<hist_roi.cols<<"|"<<hist_roi.dims<<std::endl;
           std::cout<<tmp<<std::endl;
-          std::cout<<tmp.at<double>(4, Nbin)<<std::endl;
-          hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx) = tmp.at<Matx9d>(Np, Np);//各セルのヒストグラム作成
-          //std::cout<<hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx)<<std::endl;
+          //std::cout<<tmp.at<double>(4, Nbin)<<std::endl;
+          //cv::Mat rrroi = tmp(cv::Rect(Np, Np, 1, 1));
+          //std::cout<<rrroi<<std::endl;    
+          for(int theta = 0; theta < Nbin; theta++){
+            // std::cout<<tmp.at<Vec9f>(Np, Nbin)[theta]<<std::endl;      
+            std::cout<<tmp.at<double>(Np, Np*Nbin + theta)<<"|"<<tmp.at<Vec9f>(Np, Np)[theta]<<std::endl;      
+           // hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx)[theta] = tmp.at<double>(Np, Np*Nbin + theta);//各セルのヒストグラム作成
+          }    
         }
       }
       
