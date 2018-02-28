@@ -5,7 +5,7 @@
 #include <iostream>
 
 #define Nbin (9)
-#define Np (4)
+#define Np (16)
 #define Nc  (2)
 #define DSx (256)
 #define DSy (256)
@@ -51,8 +51,8 @@ int main(int argc, const char* argv[])
   cv::resize(roi, roi, cv::Size(DSx, DSy));
   roi.convertTo(dst, CV_32F, 1);
   cv::GaussianBlur(dst, dst, cv::Size(7,7), 10, 10);
-  cv::Sobel(dst, img_diff[0], CV_32F, 1, 0);
-  cv::Sobel(dst, img_diff[1], CV_32F, 0, 1);
+  cv::Sobel(dst, img_diff[0], CV_64F, 1, 0);
+  cv::Sobel(dst, img_diff[1], CV_64F, 0, 1);
   cv::Mat mag, ang; 
   cv::cartToPolar(img_diff[0], img_diff[1], mag, ang, true); 
   //mag.convertTo(mag, CV_8U, 1);
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[])
   ang /= (180/Nbin);
   ang.convertTo(ang, CV_8U, 1);
   cv::add(ang, cv::Scalar(-1), ang, ang == 9);
-  ang.convertTo(ang, CV_32FC1, 1);
+  ang.convertTo(ang, CV_64FC1, 1);
   //cv::imshow("ang", ang);
 
   //積分画像作成
@@ -76,31 +76,27 @@ int main(int argc, const char* argv[])
    // tmp = tmp.mul(mag);
     bin.push_back(tmp);
   }
-  cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_32FC(Nbin)); 
+  cv::Mat Mat_bin(DSy/Np, DSx/Np, CV_64FC(Nbin)); 
   cv::merge(bin, Mat_bin);
 
-  typedef cv::Vec<double, 9> Vec9f;
+  typedef cv::Vec<double, 9> Vec9d;
 
   cv::Mat hog_hist[DSx/Np-Nc+1][DSy/Np-Nc+1];
   for(int Sbx = 0; Sbx < DSx/Np-Nc+1; Sbx++){
     for(int Sby = 0; Sby < DSy/Np-Nc+1; Sby++){
       //各ブロック内の処理
-      hog_hist[Sbx][Sby] = cv::Mat(Nc, Nc, CV_32FC(Nbin));//ヒストグラム初期化
+      hog_hist[Sbx][Sby] = cv::Mat(Nc, Nc, CV_64FC(Nbin));//ヒストグラム初期化
       for(int Scx = 0; Scx < Nc; Scx++){
         for(int Scy = 0; Scy < Nc; Scy++){ 
           //各セル内の処理
           cv::Mat hist_roi = Mat_bin(cv::Rect(Sby*Np+Scy*Np, Sbx*Np+Scx*Np, Np, Np));//全体からセルのデータ抽出
           cv::Mat tmp;
           cv::integral(hist_roi,tmp);         
-          //std::cout<<hist_roi.rows<<"|"<<hist_roi.cols<<"|"<<hist_roi.dims<<std::endl;
-          std::cout<<tmp<<std::endl;
-          //std::cout<<tmp.at<double>(4, Nbin)<<std::endl;
-          //cv::Mat rrroi = tmp(cv::Rect(Np, Np, 1, 1));
-          //std::cout<<rrroi<<std::endl;    
           for(int theta = 0; theta < Nbin; theta++){
-            // std::cout<<tmp.at<Vec9f>(Np, Nbin)[theta]<<std::endl;      
-            std::cout<<tmp.at<double>(Np, Np*Nbin + theta)<<"|"<<tmp.at<Vec9f>(Np, Np)[theta]<<std::endl;      
-           // hog_hist[Sbx][Sby].at<Matx9d>(Scy, Scx)[theta] = tmp.at<double>(Np, Np*Nbin + theta);//各セルのヒストグラム作成
+            //std::cout<<tmp.at<Vec9f>(Np, Np)[theta]<<std::endl;      
+            //std::cout<<tmp.at<double>(Np, Np*Nbin + theta)<<std::endl;      
+            hog_hist[Sbx][Sby].at<double>(Scy, Scx*Nbin + theta) = tmp.at<double>(Np, Np*Nbin + theta);//各セルのヒストグラム作成
+            //hog_hist[Sbx][Sby].at<Vec9d>(Scy, Scx)[theta] = tmp.at<Vec9d>(Np, Np)[theta];//各セルのヒストグラム作成
           }    
         }
       }
@@ -108,9 +104,9 @@ int main(int argc, const char* argv[])
       double sum;
       sum = cv::sqrt(norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby]) + 1);
       std::cout<<sum<<"|"<<norm(hog_hist[Sbx][Sby])*norm(hog_hist[Sbx][Sby])<<"x"<<Sbx<<"y"<<Sby<<std::endl;
-      // //std::cout<<hog_hist[Sbx][Sby]<<std::endl;
+      //std::cout<<hog_hist[Sbx][Sby]<<std::endl;
       hog_hist[Sbx][Sby] /= sum;
-      cv::Mat tmp(Nc, Nc, CV_32FC(9));
+      cv::Mat tmp;
       cv::integral(hog_hist[Sbx][Sby],tmp);
       //std::cout<<tmp<<std::endl;
 
@@ -121,9 +117,10 @@ int main(int argc, const char* argv[])
         cv::Point rd(Np*0.5*cos(theta), Np*0.5*sin(theta));
         cv::Point rp = center + rd;
         cv::Point lp = center - rd;
-        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<float>(Nc, Nc*Nbin+i), 255, 255)); 
+        //cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<Vec9d>(Nc, Nc*Nbin)[i], 255, 255)); 
+        cv::line(roi, rp, lp, cv::Scalar(255*tmp.at<double>(Nc, Nc*Nbin + i), 255, 255)); 
         //std::cout<<hog_hist[Sbx][Sby].at<double>(Nc-1, (Nc-1)*Nbin+i)<<" "<<theta*180/CV_PI<<std::endl;
-        //std::cout<<tmp<<" "<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
+        std::cout<<theta*180/CV_PI<<" "<<tmp.at<double>(Nc, Nc*Nbin+i)<<std::endl;
       }     
     }
   }
