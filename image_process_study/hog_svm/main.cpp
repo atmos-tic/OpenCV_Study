@@ -5,10 +5,10 @@
 #include <iostream>
 
 #define Nbin (9)
-#define Np (8)
+#define Np (16)
 #define Nc  (2)
-#define DSx (256)
-#define DSy (256)
+#define DSx (512)
+#define DSy (512)
 cv::Rect selection;
 int select_object;
 void on_mouse (int event, int x, int y, int flags, void *param);
@@ -18,7 +18,7 @@ int main(int argc, const char* argv[])
   cv::Mat frame;
   cv::Mat imgdst, img_diff[2], dif[3], img, clone, dst;
 
-  img = cv::imread("seacow2.jpg");
+  img = cv::imread("l_hires.jpg");
   //frame = cv::imread("img.jpg");
   
   if(!img.data)
